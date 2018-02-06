@@ -51,7 +51,7 @@ create_socat_instance() {
   read -r -p "What port should socat forward $2data to? " outbound_port
 
   socat_title="$outbound_port-$outbound_host"
-  screen -mdS "socat-$socat_title" && screen -S "socat-$socat_title" -p 0 -X stuff "socat -d -d -lf /var/log/$socat_title.log TCP-LISTEN:$inbound_port,fork,range=$RANGE TCP-CONNECT:$outbound_host:$outbound_port^M"
+  screen -mdS "socat-$socat_title" && screen -S "socat-$socat_title" -p 0 -X stuff "socat -d -d -lf /var/log/socat-$socat_title.log TCP-LISTEN:$inbound_port,fork,range=$RANGE TCP-CONNECT:$outbound_host:$outbound_port^M"
 
   ps aux | grep socat | grep $inbound_port
   netstat -tlpn | grep socat | grep $inbound_port
