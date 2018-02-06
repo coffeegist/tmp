@@ -50,9 +50,7 @@ create_socat_instance() {
   read -r -p "What IP/hostname should socat forward $2data to? " outbound_host
   read -r -p "What port should socat forward $2data to? " outbound_port
 
-  screen -mdS "socat-$outbound_host-$outbound_port"
-  screen -S "socat-$outbound_host-$outbound_port" -p 0 -X stuff "socat -d -d -lf /var/log/socat.log TCP-LISTEN:$inbound_port,fork,range=$RANGE TCP-CONNECT:$outbound_host:$outbound_port
-  " # THIS QUOTE MUST REMAIN ON A LINE BY ITSELF FOR THE ABOVE SCREEN COMMAND TO EXECUTE
+  screen -mdS "socat-$outbound_port-$outbound_host" && screen -S "socat-$outbound_host-$outbound_port" -p 0 -X stuff "\"socat -d -d -lf /var/log/socat.log TCP-LISTEN:$inbound_port,fork,range=$RANGE TCP-CONNECT:$outbound_host:$outbound_port\"$'\n'"
 
   ps aux | grep socat | grep $inbound_port
   netstat -tlpn | grep socat | grep $inbound_port
