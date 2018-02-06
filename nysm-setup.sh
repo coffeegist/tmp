@@ -42,7 +42,7 @@ create_socat_instance() {
   # If argument 2 is set, then we are doing the initial socats. These are for
   #  localhost listening only.
   if [ -z "$2" ]; then
-    RANGE="0.0.0.0/32"
+    RANGE="0.0.0.0/0"
   else
     RANGE="127.0.0.1/32"
   fi
