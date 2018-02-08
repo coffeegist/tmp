@@ -32,7 +32,21 @@ check_errors() {
   fi
 }
 
+nysm_confirm() {
+  read -r -p "$1 [Y/n] " response
+  case "$response" in
+      [nN][oO]|[nN])
+          return 1
+          ;;
+      *)
+          return 0
+          ;;
+  esac
+}
+
 create_socat_instance() {
+  nysm_confirm "Is this socat instance TCP? "
+  TCP_INSTANCE=$?
   if [ -z "$1" ]; then
     read -r -p "What port should socat listen on? " inbound_port
   else
@@ -50,23 +64,16 @@ create_socat_instance() {
   read -r -p "What IP/hostname should socat forward $2data to? " outbound_host
   read -r -p "What port should socat forward $2data to? " outbound_port
 
-  socat_title="$outbound_port-$outbound_host"
-  screen -mdS "socat-$socat_title" && sleep 1 && screen -S "socat-$socat_title" -p 0 -X stuff "socat -d -d -lf /var/log/socat-$socat_title.log TCP-LISTEN:$inbound_port,fork,range=$RANGE TCP-CONNECT:$outbound_host:$outbound_port^M"
+  socat_title="$outbound_port-$outbound_host-$TCP_INSTANCE"
+  screen -mdS "socat-$socat_title" && sleep 1
+  if [ $TCP_INSTANCE -eq 0 ]; then
+    screen -S "socat-$socat_title" -p 0 -X stuff "socat -d -d -lf /var/log/socat-$socat_title.log TCP-LISTEN:$inbound_port,fork,range=$RANGE TCP-CONNECT:$outbound_host:$outbound_port^M"
+  else
+    screen -S "socat-$socat_title" -p 0 -X stuff "socat -d -d -lf /var/log/socat-$socat_title.log udp4-recvfrom:$inbound_port,fork udp4-sendto:$outbound_host:$outbound_port^M"
+  fi
 
-  ps aux | grep socat | grep $inbound_port
+  ps aux | grep $socat_title
   netstat -tlpn | grep socat | grep $inbound_port
-}
-
-nysm_confirm() {
-  read -r -p "$1 [y/N] " response
-  case "$response" in
-      [yY][eE][sS]|[yY])
-          return 0
-          ;;
-      *)
-          return 1
-          ;;
-  esac
 }
 
 nysm_install() {
